@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Leave Status</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      background-color: #003366;
+      padding: 15px;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a.active, nav ul li a:hover {
+      background-color: #00509e;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #003366;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    .status-pending {
+      color: #FFA500;
+      font-weight: bold;
+    }
+
+    .status-approved {
+      color: #008000;
+      font-weight: bold;
+    }
+
+    .status-rejected {
+      color: #FF0000;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <marquee behavior="alternate" direction="">
+        <h1>Welcome to Leave status dashboard</h1>
+    </marquee><hr>
+    <ul>
+      <li><a href="employee.html">Dashboard</a></li>
+      <li><a href="leave-application.html">Apply for Leave</a></li>
+      <li><a href="employee-leaves.html" class="active">My Leave Status</a></li>
+      <li><a href="#" id="logout">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>My Leave Applications</h2>
+    <div id="leaveStatusContainer">
+      <table id="leaveStatusTable">
+        <thead>
+          <tr>
+            <th>Leave Type</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Application Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="leaveStatusBody">
+          <!-- Leave applications will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+      <p id="noLeavesMessage" style="display: none;">You haven't applied for any leaves yet.</p>
+    </div>
+    
+  </main>
+
+  <script>
+    // Check role and ID
+    const role = localStorage.getItem("userRole");
+    const userId = localStorage.getItem("userId");
+
+    if (!role || role !== "employee") {
+      alert("Access denied. Please log in as an employee.");
+      window.location.href = "index.html";
+    }
+
+    // Get employee info
+    const employees = JSON.parse(localStorage.getItem("employees")) || [];
+    const user = employees.find(emp => emp.id === userId);
+
+    if (!user) {
+      alert("Employee data not found.");
+      window.location.href = "index.html";
+    }
+
+    // Logout button
+    document.getElementById("logout").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+
+    // Display leave applications
+    document.addEventListener("DOMContentLoaded", () => {
+      const leaveApplications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+      const userLeaves = leaveApplications.filter(leave => leave.employeeId === userId);
+      const leaveStatusBody = document.getElementById("leaveStatusBody");
+      const noLeavesMessage = document.getElementById("noLeavesMessage");
+
+      if (userLeaves.length === 0) {
+        noLeavesMessage.style.display = "block";
+        return;
+      }
+
+      userLeaves.forEach(leave => {
+        const row = document.createElement("tr");
+        
+        const typeCell = document.createElement("td");
+        typeCell.textContent = leave.leaveType.charAt(0).toUpperCase() + leave.leaveType.slice(1);
+        row.appendChild(typeCell);
+        
+        const startCell = document.createElement("td");
+        startCell.textContent = leave.startDate;
+        row.appendChild(startCell);
+        
+        const endCell = document.createElement("td");
+        endCell.textContent = leave.endDate;
+        row.appendChild(endCell);
+        
+        const appDateCell = document.createElement("td");
+        appDateCell.textContent = leave.applicationDate;
+        row.appendChild(appDateCell);
+        
+        const statusCell = document.createElement("td");
+        statusCell.textContent = leave.status.charAt(0).toUpperCase() + leave.status.slice(1);
+        statusCell.className = `status-${leave.status}`;
+        row.appendChild(statusCell);
+        
+        leaveStatusBody.appendChild(row);
+      });
+    });
+  </script>
+</body>
+</html>

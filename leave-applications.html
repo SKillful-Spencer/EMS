@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Leave Applications</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      background-color: #003366;
+      padding: 15px;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a.active, nav ul li a:hover {
+      background-color: #00509e;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #003366;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    .status-pending {
+      color: #FFA500;
+      font-weight: bold;
+    }
+
+    .status-approved {
+      color: #008000;
+      font-weight: bold;
+    }
+
+    .status-rejected {
+      color: #FF0000;
+      font-weight: bold;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 5px;
+    }
+
+    .approve-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .reject-btn {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .search-filter {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .search-filter input, .search-filter select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <marquee behavior="alternate" direction="">
+      <h1>Welcome to EMS leave records dashboard</h1>
+   </marquee> <hr>
+    <ul>
+      <li><a href="admin.html">Dashboard</a></li>
+      <li><a href="leave-applications.html" class="active">Leave Applications</a></li>
+      <li><a href="employees.html">Manage Employees</a></li>
+      <li><a href="#" id="logout">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Leave Applications</h2>
+    
+    <div class="search-filter">
+      <input type="text" id="searchInput" placeholder="Search by employee name...">
+      <select id="statusFilter">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    
+    <div id="leaveApplicationsContainer">
+      <table id="leaveApplicationsTable">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Leave Type</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Application Date</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leaveApplicationsBody">
+          <!-- Leave applications will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+      <p id="noApplicationsMessage" style="display: none;">No leave applications found.</p>
+    </div>
+  </main>
+
+  <script>
+    // Check role and ID
+    const role = localStorage.getItem("userRole");
+    const userId = localStorage.getItem("userId");
+
+    if (!role || role !== "admin") {
+      alert("Access denied. Please log in as an admin.");
+      window.location.href = "index.html";
+    }
+
+    // Logout button
+    document.getElementById("logout").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+
+    // Function to update leave status
+    function updateLeaveStatus(applicationId, newStatus) {
+      const leaveApplications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+      const applicationIndex = leaveApplications.findIndex(app => app.id === applicationId);
+      
+      if (applicationIndex !== -1) {
+        leaveApplications[applicationIndex].status = newStatus;
+        localStorage.setItem("leaveApplications", JSON.stringify(leaveApplications));
+        renderLeaveApplications();
+      }
+    }
+
+    // Function to render leave applications
+    function renderLeaveApplications(filter = "") {
+      const leaveApplications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+      const statusFilter = document.getElementById("statusFilter").value;
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const leaveApplicationsBody = document.getElementById("leaveApplicationsBody");
+      const noApplicationsMessage = document.getElementById("noApplicationsMessage");
+
+      // Clear current table
+      leaveApplicationsBody.innerHTML = "";
+
+      // Filter applications
+      let filteredApplications = leaveApplications;
+      
+      if (statusFilter) {
+        filteredApplications = filteredApplications.filter(app => app.status === statusFilter);
+      }
+      
+      if (searchTerm) {
+        filteredApplications = filteredApplications.filter(app => 
+          app.employeeName.toLowerCase().includes(searchTerm))
+      }
+
+      if (filteredApplications.length === 0) {
+        noApplicationsMessage.style.display = "block";
+        return;
+      } else {
+        noApplicationsMessage.style.display = "none";
+      }
+
+      // Add applications to table
+      filteredApplications.forEach(application => {
+        const row = document.createElement("tr");
+        
+        // Generate unique ID if not exists (for older entries)
+        if (!application.id) {
+          application.id = 'app-' + Math.random().toString(36).substr(2, 9);
+          localStorage.setItem("leaveApplications", JSON.stringify(leaveApplications));
+        }
+        
+        // Employee Name
+        const nameCell = document.createElement("td");
+        nameCell.textContent = application.employeeName;
+        row.appendChild(nameCell);
+        
+        // Leave Type
+        const typeCell = document.createElement("td");
+        typeCell.textContent = application.leaveType.charAt(0).toUpperCase() + application.leaveType.slice(1);
+        row.appendChild(typeCell);
+        
+        // Start Date
+        const startCell = document.createElement("td");
+        startCell.textContent = application.startDate;
+        row.appendChild(startCell);
+        
+        // End Date
+        const endCell = document.createElement("td");
+        endCell.textContent = application.endDate;
+        row.appendChild(endCell);
+        
+        // Application Date
+        const appDateCell = document.createElement("td");
+        appDateCell.textContent = application.applicationDate;
+        row.appendChild(appDateCell);
+        
+        // Reason
+        const reasonCell = document.createElement("td");
+        reasonCell.textContent = application.reason;
+        row.appendChild(reasonCell);
+        
+        // Status
+        const statusCell = document.createElement("td");
+        statusCell.textContent = application.status.charAt(0).toUpperCase() + application.status.slice(1);
+        statusCell.className = `status-${application.status}`;
+        row.appendChild(statusCell);
+        
+        // Actions
+        const actionsCell = document.createElement("td");
+        if (application.status === "pending") {
+          const approveBtn = document.createElement("button");
+          approveBtn.textContent = "Approve";
+          approveBtn.className = "action-btn approve-btn";
+          approveBtn.onclick = () => updateLeaveStatus(application.id, "approved");
+          
+          const rejectBtn = document.createElement("button");
+          rejectBtn.textContent = "Reject";
+          rejectBtn.className = "action-btn reject-btn";
+          rejectBtn.onclick = () => updateLeaveStatus(application.id, "rejected");
+          
+          actionsCell.appendChild(approveBtn);
+          actionsCell.appendChild(rejectBtn);
+        } else {
+          actionsCell.textContent = "No actions";
+        }
+        row.appendChild(actionsCell);
+        
+        leaveApplicationsBody.appendChild(row);
+      });
+    }
+
+    // Initial render and event listeners
+    document.addEventListener("DOMContentLoaded", () => {
+      renderLeaveApplications();
+      
+      // Add event listeners for search and filter
+      document.getElementById("searchInput").addEventListener("input", () => {
+        renderLeaveApplications();
+      });
+      
+      document.getElementById("statusFilter").addEventListener("change", () => {
+        renderLeaveApplications();
+      });
+    });
+  </script>
+</body>
+</html>

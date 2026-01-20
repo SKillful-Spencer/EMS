@@ -1,0 +1,9 @@
+[
+  {
+    "leaveId": "LV001",
+    "employeeId": "EMP001",
+    "fromDate": "2025-08-01",
+    "toDate": "2025-08-05",
+    "status": "Approved"
+  }
+]

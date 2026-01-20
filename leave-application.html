@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Employee Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      background-color: #003366;
+      padding: 15px;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a.active, nav ul li a:hover {
+      background-color: #00509e;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.1rem;
+    }
+
+    /* Leave Form Styles */
+    #leaveForm {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    #leaveForm h3 {
+      margin-top: 0;
+      color: #003366;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .form-group textarea {
+      height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      background-color: #003366;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      background-color: #00509e;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <marquee behavior="alternate" direction="">
+        <h1>Welcome to Leave application dashboard</h1>
+    </marquee><hr>
+    <ul>
+      <li><a href="#" class="active" id="dashboardLink">Dashboard</a></li>
+      <li><a href="#" id="leaveLink">Apply for Leave</a></li>
+      <li><a href="employee-leaves.html">My Leave Status</a></li>
+      <li><a href="#" id="logout">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div id="dashboardContent">
+      <h2>Welcome, <span id="employeeName">Employee</span> 👋</h2>
+      <p>This is your dashboard. Use the navigation to apply for leave or view your leave status.</p>
+    </div>
+
+    <!-- Leave Application Form -->
+    <div id="leaveForm">
+      <h3>Apply for Leave</h3>
+      <form id="leaveApplicationForm">
+        <div class="form-group">
+          <label for="leaveType">Leave Type:</label>
+          <select id="leaveType" required>
+            <option value="">Select Leave Type</option>
+            <option value="sick">Sick Leave</option>
+            <option value="vacation">Vacation Leave</option>
+            <option value="personal">Personal Leave</option>
+            <option value="bereavement">Bereavement Leave</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="startDate">Start Date:</label>
+          <input type="date" id="startDate" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="endDate">End Date:</label>
+          <input type="date" id="endDate" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="reason">Reason:</label>
+          <textarea id="reason" required></textarea>
+        </div>
+        
+        <button type="submit" class="btn">Submit Application</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Check role and ID
+    const role = localStorage.getItem("userRole");
+    const userId = localStorage.getItem("userId");
+
+    if (!role || role !== "employee") {
+      alert("Access denied. Please log in as an employee.");
+      window.location.href = "index.html";
+    }
+
+    // Get employee info
+    const employees = JSON.parse(localStorage.getItem("employees")) || [];
+    const user = employees.find(emp => emp.id === userId);
+
+    if (!user) {
+      alert("Employee data not found.");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("employeeName").textContent = user.name;
+
+    // Logout button
+    document.getElementById("logout").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+
+    // Leave application functionality
+    const leaveLink = document.getElementById("leaveLink");
+    const dashboardLink = document.getElementById("dashboardLink");
+    const leaveForm = document.getElementById("leaveForm");
+    const dashboardContent = document.getElementById("dashboardContent");
+
+    leaveLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      dashboardContent.style.display = "none";
+      leaveForm.style.display = "block";
+      dashboardLink.classList.remove("active");
+      leaveLink.classList.add("active");
+    });
+
+    dashboardLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      dashboardContent.style.display = "block";
+      leaveForm.style.display = "none";
+      leaveLink.classList.remove("active");
+      dashboardLink.classList.add("active");
+    });
+
+    // Handle form submission
+    document.getElementById("leaveApplicationForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      
+      // Get form values
+      const leaveType = document.getElementById("leaveType").value;
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+      const reason = document.getElementById("reason").value;
+      
+      // Create leave application object
+      const leaveApplication = {
+        employeeId: userId,
+        employeeName: user.name,
+        leaveType,
+        startDate,
+        endDate,
+        reason,
+        status: "pending", // default status
+        applicationDate: new Date().toISOString().split('T')[0] // today's date
+      };
+      
+      // Save to localStorage
+      const leaveApplications = JSON.parse(localStorage.getItem("leaveApplications")) || [];
+      leaveApplications.push(leaveApplication);
+      localStorage.setItem("leaveApplications", JSON.stringify(leaveApplications));
+      
+      alert("Your leave application has been submitted successfully!");
+      
+      // Reset form
+      document.getElementById("leaveApplicationForm").reset();
+      
+      // Return to dashboard
+      dashboardContent.style.display = "block";
+      leaveForm.style.display = "none";
+      leaveLink.classList.remove("active");
+      dashboardLink.classList.add("active");
+    });
+  </script>
+</body>
+</html>

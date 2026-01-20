@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add Employee</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #003366;
+      padding: 15px;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    nav ul li a.active, nav ul li a:hover {
+      background-color: #00509e;
+    }
+    main {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    form label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: 600;
+    }
+    form input, form select {
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    form button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      font-size: 1rem;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    form button:hover {
+      background-color: #00509e;
+    }
+    #success-msg {
+      color: green;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <marquee behavior="alternate" direction="">
+      <h1>Welcome to EMS Add employee dashboard</h1>
+   </marquee> <hr>
+    <ul>
+      <li><a href="add-employee.html" class="active">Add Employee</a></li>
+      <li><a href="leave-applications.html">Leave Applications</a></li>
+      <li><a href="leave-records.html">Leave Records</a></li>
+      <li><a href="performance.html">Performance Analytics</a></li>
+      <li><a href="admin.html">Home</a></li>
+
+      <li><a href="#" id="logout">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>All Employees</h2>
+<div id="employeeListContainer">
+
+</div>
+
+<script src="js/add-employee.js"></script>
+
+    <h1>Add New Employee</h1>
+
+    <form id="add-employee-form">
+      <label for="emp-id">Employee ID</label>
+      <input type="text" id="emp-id" required />
+
+      <label for="emp-name">Name</label>
+      <input type="text" id="emp-name" required />
+
+      <label for="emp-dept">Department</label>
+      <select id="emp-dept" required>
+        <option value="">Select Department</option>
+        <option value="HR">HR</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Sales">Sales</option>
+        <!-- Add more if needed -->
+      </select>
+
+      <label for="emp-role">Role</label>
+      <input type="text" id="emp-role" required />
+
+      <label for="emp-doj">Date of Joining</label>
+      <input type="date" id="emp-doj" required />
+
+      <label for="emp-performance">Performance Score (0-100)</label>
+      <input type="number" id="emp-performance" min="0" max="100" required />
+
+      <label for="emp-hours">Hours Worked</label>
+      <input type="number" id="emp-hours" min="0" required />
+
+      <button type="submit">Add Employee</button>
+    </form>
+
+    <p id="success-msg"></p>
+  </main>
+
+  <script>
+    // Check admin access
+    const role = localStorage.getItem("userRole");
+    if (!role || role !== "admin") {
+      alert("Access denied. Please login as admin.");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("logout").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+
+    const form = document.getElementById("add-employee-form");
+    const successMsg = document.getElementById("success-msg");
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+
+      // Collect form data
+      const newEmployee = {
+        id: document.getElementById("emp-id").value.trim(),
+        name: document.getElementById("emp-name").value.trim(),
+        department: document.getElementById("emp-dept").value,
+        role: document.getElementById("emp-role").value.trim(),
+        doj: document.getElementById("emp-doj").value,
+        performance: Number(document.getElementById("emp-performance").value),
+        hoursWorked: Number(document.getElementById("emp-hours").value)
+      };
+
+      // Load existing employees or empty array
+      let employees = JSON.parse(localStorage.getItem("employees")) || [];
+
+      // Optional: Check for duplicate ID
+      if (employees.some(emp => emp.id === newEmployee.id)) {
+        alert("Employee ID already exists. Use a unique ID.");
+        return;
+      }
+
+      employees.push(newEmployee);
+
+      // Save back to localStorage
+      localStorage.setItem("employees", JSON.stringify(employees));
+
+      successMsg.textContent = "Employee added successfully!";
+
+      form.reset();
+
+      // Optional: Redirect after delay
+      // setTimeout(() => window.location.href = "admin.html", 1500);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "EMP001",
+    "name": "Alice Johnson",
+    "department": "HR",
+    "role": "Recruiter",
+    "doj": "2022-01-15",
+    "performance": 8.5,
+    "hoursWorked": 1280
+  },
+  {
+    "id": "EMP002",
+    "name": "Bob Smith",
+    "department": "Engineering",
+    "role": "Developer",
+    "doj": "2021-03-12",
+    "performance": 9.2,
+    "hoursWorked": 1560
+  }
+]

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leave Records</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #003366;
+      padding: 15px;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    nav ul li a.active, nav ul li a:hover {
+      background-color: #00509e;
+    }
+    main {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    select {
+      padding: 6px;
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+    #no-records {
+      margin-top: 20px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="add-employee.html">Add Employee</a></li>
+      <li><a href="leave-applications.html">Leave Applications</a></li>
+      <li><a href="leave-records.html" class="active">Leave Records</a></li>
+      <li><a href="admin.html">Home</a></li>
+
+      <li><a href="#" id="logout">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>All Leave Records</h1>
+
+    <label for="status-filter">Filter by Status:</label>
+    <select id="status-filter">
+      <option value="All">All</option>
+      <option value="Pending">Pending</option>
+      <option value="Approved">Approved</option>
+      <option value="Rejected">Rejected</option>
+    </select>
+
+    <div id="records-table"></div>
+  </main>
+
+  <script>
+    // Check if admin
+    const role = localStorage.getItem("userRole");
+    if (!role || role !== "admin") {
+      alert("Access denied. Please login as admin.");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("logout").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+
+    const recordsTable = document.getElementById("records-table");
+    const statusFilter = document.getElementById("status-filter");
+
+    let leaves = JSON.parse(localStorage.getItem("leaves")) || [];
+
+    function renderTable(status = "All") {
+      let filtered = status === "All" ? leaves : leaves.filter(lv => lv.status === status);
+
+      if (filtered.length === 0) {
+        recordsTable.innerHTML = `<p id="no-records">No leave records found for selected status.</p>`;
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Name</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Reason</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      filtered.forEach(leave => {
+        html += `
+          <tr>
+            <td>${leave.empId}</td>
+            <td>${leave.empName}</td>
+            <td>${leave.from}</td>
+            <td>${leave.to}</td>
+            <td>${leave.reason}</td>
+            <td>${leave.status}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      recordsTable.innerHTML = html;
+    }
+
+    // Event: Filter change
+    statusFilter.addEventListener("change", () => {
+      renderTable(statusFilter.value);
+    });
+
+    // Initial table render
+    renderTable();
+  </script>
+</body>
+</html>

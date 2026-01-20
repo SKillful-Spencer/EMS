@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Performance Analytics</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #003366;
+      padding: 15px;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    nav ul li a.active, nav ul li a:hover {
+      background-color: #00509e;
+    }
+    main {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .excellent {
+      color: green;
+      font-weight: bold;
+    }
+    .good {
+      color: #007bff;
+      font-weight: bold;
+    }
+    .improvement {
+      color: orange;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="add-employee.html">Add Employee</a></li>
+      <li><a href="leave-applications.html">Leave Applications</a></li>
+      <li><a href="leave-records.html">Leave Records</a></li>
+      <li><a href="performance.html" class="active">Performance Analytics</a></li>
+      <li><a href="admin.html">Home</a></li>
+      <li><a href="#" id="logout">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Employee Performance Overview</h1>
+    <div id="performance-table"></div>
+  </main>
+
+  <script>
+    // Role check
+    const role = localStorage.getItem("userRole");
+    if (!role || role !== "admin") {
+      alert("Access denied. Please login as admin.");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("logout").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+
+    const employees = JSON.parse(localStorage.getItem("employees")) || [];
+    const container = document.getElementById("performance-table");
+
+    function getPerformanceLabel(score) {
+      if (score >= 85) return '<span class="excellent">Excellent</span>';
+      if (score >= 60) return '<span class="good">Good</span>';
+      return '<span class="improvement">Needs Improvement</span>';
+    }
+
+    function renderTable() {
+      if (employees.length === 0) {
+        container.innerHTML = `<p>No employee data available.</p>`;
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Performance Score</th>
+              <th>Hours Worked</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      employees.forEach(emp => {
+        html += `
+          <tr>
+            <td>${emp.id}</td>
+            <td>${emp.name}</td>
+            <td>${emp.department}</td>
+            <td>${emp.performance}</td>
+            <td>${emp.hoursWorked}</td>
+            <td>${getPerformanceLabel(emp.performance)}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
